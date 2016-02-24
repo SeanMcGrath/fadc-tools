@@ -1,0 +1,20 @@
+#!/bin/bash
+
+usage (){
+	echo ""
+	echo "Usage: view_waves ROOT_FILE"
+	echo "View the raw waveforms in an fADC125 root file, with peak boundaries shown."
+	echo ""
+}
+
+if [ "$#" -lt 1 ] ; then usage ; exit ; fi
+
+if [ ! -e "$1" ] ; then
+	echo "file $1 does not exist!"
+else
+	exec 2> /dev/null
+	cd macros
+	root -q 'scanMacro.c("../'"$1"'")' | grep '^[0-9]*,[0-9]*'
+	cd ..
+fi
+
