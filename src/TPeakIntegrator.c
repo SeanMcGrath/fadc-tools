@@ -1,112 +1,7 @@
-#define integrate_peaks_cxx
-// The class definition in integrate_peaks.h has been generated automatically
-// by the ROOT utility TTree::MakeSelector(). This class is derived
-// from the ROOT class TSelector. For more information on the TSelector
-// framework see $ROOTSYS/README/README.SELECTOR or the ROOT User Manual.
+#include "TPeakIntegrator.h"
 
-// The following methods are defined in this file:
-//    Begin():        called every time a loop on the tree starts,
-//                    a convenient place to create your histograms.
-//    SlaveBegin():   called after Begin(), when on PROOF called only on the
-//                    slave servers.
-//    Process():      called for each event, in this function you decide what
-//                    to read and fill your histograms.
-//    SlaveTerminate: called at the end of the loop on the tree, when on PROOF
-//                    called only on the slave servers.
-//    Terminate():    called at the end of the loop on the tree,
-//                    a convenient place to draw/fit your histograms.
-//
-// To use this file, try the following session on your Tree T:
-//
-// Root > T->Process("integrate_peaks.C")
-// Root > T->Process("integrate_peaks.C","some options")
-// Root > T->Process("integrate_peaks.C+")
-//
-
-#include <TH2.h>
-#include <TStyle.h>
-#include <TROOT.h>
-#include <TChain.h>
-#include <TFile.h>
-#include <TSelector.h>
-#include <TCanvas.h>
-
-// Header file for the classes stored in the TTree if any.
-#include <vector>
-#include <iostream>
-
-// Fixed size dimensions of array or collections stored in the TTree if any.
-
-class integrate_peaks : public TSelector {
-public :
-   TTree          *fChain;   //!pointer to the analyzed TTree or TChain
-
-   // Declaration of leaf types
-   UInt_t          channelnum;
-   UInt_t          eventnum;
-   UInt_t          rocid;
-   UInt_t          slot;
-   UInt_t          channel;
-   UInt_t          itrigger;
-   vector<unsigned int> *waveform;
-   UInt_t          nsamples;
-   UInt_t          w_integral;
-   UInt_t          w_min;
-   UInt_t          w_max;
-   UInt_t          w_samp1;
-   UInt_t          w_ped;
-   Float_t         w_time;
-   UChar_t         invalid_samples;
-   UChar_t         overflow;
-
-   // List of branches
-   TBranch        *b_channelnum;   //!
-   TBranch        *b_eventnum;   //!
-   TBranch        *b_rocid;   //!
-   TBranch        *b_slot;   //!
-   TBranch        *b_channel;   //!
-   TBranch        *b_itrigger;   //!
-   TBranch        *b_waveform;   //!
-   TBranch        *b_nsamples;   //!
-   TBranch        *b_w_integral;   //!
-   TBranch        *b_w_min;   //!
-   TBranch        *b_w_max;   //!
-   TBranch        *b_w_samp1;   //!
-   TBranch        *b_w_ped;   //!
-   TBranch        *b_w_time;   //!
-   TBranch        *b_invalid_samples;   //!
-   TBranch        *b_overflow;   //!
-
-   // Analysis variables
-   const int analysisChannel = 13;
-   const double yAxisRange = 2000.0;
-   UInt_t 	  wave_integral;
-   vector<UInt_t> integrals;
-   vector<UInt_t> leading_edge_times;
-
-   // Analysis functions
-   unsigned int * FindPeakWindow(vector<unsigned int> * data);
-
-   integrate_peaks(TTree * /*tree*/ =0) : fChain(0) { }
-   virtual ~integrate_peaks() { }
-   virtual Int_t   Version() const { return 2; }
-   virtual void    Begin(TTree *tree);
-   virtual void    SlaveBegin(TTree *tree);
-   virtual void    Init(TTree *tree);
-   virtual Bool_t  Notify();
-   virtual Bool_t  Process(Long64_t entry);
-   virtual Int_t   GetEntry(Long64_t entry, Int_t getall = 0) { return fChain ? fChain->GetTree()->GetEntry(entry, getall) : 0; }
-   virtual void    SetOption(const char *option) { fOption = option; }
-   virtual void    SetObject(TObject *obj) { fObject = obj; }
-   virtual void    SetInputList(TList *input) { fInput = input; }
-   virtual TList  *GetOutputList() const { return fOutput; }
-   virtual void    SlaveTerminate();
-   virtual void    Terminate();
-
-   ClassDef(integrate_peaks,0);
-};
-
-void integrate_peaks::Init(TTree *tree)
+ClassImp(TPeakIntegrator);
+void TPeakIntegrator::Init(TTree *tree)
 {
    // The Init() function is called when the selector needs to initialize
    // a new tree or chain. Typically here the branch addresses and branch
@@ -141,7 +36,7 @@ void integrate_peaks::Init(TTree *tree)
    fChain->SetBranchAddress("overflow", &overflow, &b_overflow);
 }
 
-Bool_t integrate_peaks::Notify()
+Bool_t TPeakIntegrator::Notify()
 {
    // The Notify() function is called when a new file is opened. This
    // can be either for a new TTree in a TChain or when when a new TTree
@@ -152,7 +47,7 @@ Bool_t integrate_peaks::Notify()
    return kTRUE;
 }
 
-void integrate_peaks::Begin(TTree * /*tree*/)
+void TPeakIntegrator::Begin(TTree * /*tree*/)
 {
    // The Begin() function is called at the start of the query.
    // When running with PROOF Begin() is only called on the client.
@@ -161,7 +56,7 @@ void integrate_peaks::Begin(TTree * /*tree*/)
    TString option = GetOption();
 }
 
-void integrate_peaks::SlaveBegin(TTree * /*tree*/)
+void TPeakIntegrator::SlaveBegin(TTree * /*tree*/)
 {
    // The SlaveBegin() function is called after the Begin() function.
    // When running with PROOF SlaveBegin() is called on each slave server.
@@ -171,7 +66,7 @@ void integrate_peaks::SlaveBegin(TTree * /*tree*/)
 
 }
 
-Bool_t integrate_peaks::Process(Long64_t entry)
+Bool_t TPeakIntegrator::Process(Long64_t entry)
 {
 
   GetEntry(entry);
@@ -200,7 +95,7 @@ Bool_t integrate_peaks::Process(Long64_t entry)
    return kTRUE;
 }
 
-unsigned int * integrate_peaks::FindPeakWindow(vector<unsigned int> * data)
+unsigned int * TPeakIntegrator::FindPeakWindow(std::vector<unsigned int> * data)
 {
 		  static unsigned int peaks[2] = {0, 0};
 		  unsigned int current;
@@ -244,7 +139,7 @@ unsigned int * integrate_peaks::FindPeakWindow(vector<unsigned int> * data)
 		  return peaks;
 }
 
-void integrate_peaks::SlaveTerminate()
+void TPeakIntegrator::SlaveTerminate()
 {
    // The SlaveTerminate() function is called after all entries or objects
    // have been processed. When running with PROOF SlaveTerminate() is called
@@ -252,14 +147,14 @@ void integrate_peaks::SlaveTerminate()
 
 }
 
-void integrate_peaks::Terminate()
+void TPeakIntegrator::Terminate()
 {
    // The Terminate() function is the last function to be called during
    // a query. It always runs on the client, it can be used to present
    // the results graphically or save the results to file.
 
-	cout << "Wave integral, Wave Leading Edge" << endl;
+	std::cout << "Wave integral, Wave Leading Edge" << std::endl;
 	for(int j = 0; j < integrals.size(); j++){
-		cout << integrals[j] << "," << leading_edge_times[j] << endl;
+		std::cout << integrals[j] << "," << leading_edge_times[j] << std::endl;
 	}
 }
