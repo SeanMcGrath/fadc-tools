@@ -1,3 +1,3 @@
 void rootlogon(){
-	gROOT->ProcessLine(".L libWaves.so");
+	gROOT->ProcessLine(".L libfadc.so");
 }

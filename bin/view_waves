@@ -13,8 +13,6 @@ if [ ! -e "$1" ] ; then
 	echo "file $1 does not exist!"
 else
 	exec 2> /dev/null
-	cd macros
-	root -q 'scanMacro.c("../'"$1"'")' | grep '^[0-9]*,[0-9]*'
-	cd ..
+	root -q 'TWaveScannerMacro.c("'"$1"'")'
 fi
 

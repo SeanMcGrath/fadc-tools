@@ -33,3 +33,8 @@
 
 # ROOT files
 *.root
+*Dict*.cxx
+*Dict*.h
+
+#Vagrant
+.vagrant/
