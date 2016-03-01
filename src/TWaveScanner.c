@@ -110,6 +110,22 @@ Bool_t TWaveScanner::Process(Long64_t entry)
    return kTRUE;
 }
 
+void TWaveScanner::SetYAxisRange(double range)
+{
+	autoYAxis = false;
+	yAxisRange = range;
+}
+
+void TWaveScanner::SetAutoYAxis(bool autorange)
+{
+	autoYAxis = autorange;
+}
+
+void TWaveScanner::SetAnalysisChannel(short channel)
+{
+	analysisChannel = channel;
+}
+
 unsigned int * TWaveScanner::FindPeakWindow(std::vector<unsigned int> * data)
 {
 		  static unsigned int peaks[2] = {0, 0};
@@ -153,6 +169,18 @@ unsigned int * TWaveScanner::FindPeakWindow(std::vector<unsigned int> * data)
 
 		  return peaks;
 }
+
+unsigned int TWaveScanner::FindPeakMax(std::vector<unsigned int> * data)
+{
+	unsigned int max = 0;
+	for(unsigned int i=1; i <= data->size(); i++) {
+		if(data->at(i) > max){
+			max = data->at(i);
+		}
+	}
+	return max;
+}
+
 
 void TWaveScanner::SlaveTerminate()
 {

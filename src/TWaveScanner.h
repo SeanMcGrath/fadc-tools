@@ -80,8 +80,9 @@ public :
    TBranch        *b_overflow;   //!
 
    // Analysis variables
-   const int analysisChannel = 13;
-   const double yAxisRange = 2000.0;
+   int analysisChannel = 13;
+   double yAxisRange = 2000.0;
+   bool autoYAxis = false;
 
    TWaveScanner(TTree * /*tree*/ =0) : fChain(0) { }
    virtual ~TWaveScanner() { }
@@ -98,9 +99,13 @@ public :
    virtual TList  *GetOutputList() const { return fOutput; }
    virtual void    SlaveTerminate();
    virtual void    Terminate();
+   virtual void    SetYAxisRange(double range);
+   virtual void    SetAutoYAxis(bool autorange);
+   virtual void    SetAnalysisChannel(short channel);
 
    // Analysis functions
    virtual unsigned int * FindPeakWindow(std::vector<unsigned int> * data);
+   virtual unsigned int FindPeakMax(std::vector<unsigned int> * data);
 
    ClassDef(TWaveScanner,1);
 };
