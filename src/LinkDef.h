@@ -2,6 +2,5 @@
 #pragma link off all globals; 
 #pragma link off all classes; 
 #pragma link off all functions; 
-#pragma link C++ defined_in TWaveScanner.h;
-#pragma link C++ defined_in TPeakIntegrator.h;
+#pragma link C++ defined_in fadc.h;
 #endif 

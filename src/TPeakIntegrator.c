@@ -1,4 +1,6 @@
-#include "TPeakIntegrator.h"
+#ifndef libfadc
+#include "fadc.h"
+#endif
 
 ClassImp(TPeakIntegrator);
 void TPeakIntegrator::Init(TTree *tree)
@@ -74,12 +76,12 @@ Bool_t TPeakIntegrator::Process(Long64_t entry)
    if (channel==analysisChannel) {
 		  int Nbins = waveform->size();
 
-		  unsigned int *peaks = FindPeakWindow(waveform);
+		  unsigned int *peaks = FindPeakWindow(waveform, .2, 2);
 		  unsigned int peakStart = *(peaks);
 		  unsigned int peakEnd = *(peaks + 1);
 
 		  unsigned int binValue;
-		  wave_integral = 0;
+		  unsigned int wave_integral = 0;
 
 		  for(unsigned int ibin=1; ibin<=Nbins; ibin++) {
 			  binValue = waveform->at(ibin-1);
@@ -88,56 +90,16 @@ Bool_t TPeakIntegrator::Process(Long64_t entry)
 			  }
 		  }
 
-		  integrals.push_back(wave_integral);
-		  leading_edge_times.push_back(peakStart);
+		  // Peak found
+		  if (wave_integral > 0 && peakEnd - peakStart > 1){
+			  integrals.push_back(wave_integral);
+			  leading_edge_times.push_back(peakStart);
+		  }
    }
 
    return kTRUE;
 }
 
-unsigned int * TPeakIntegrator::FindPeakWindow(std::vector<unsigned int> * data)
-{
-		  static unsigned int peaks[2] = {0, 0};
-		  unsigned int current;
-		  unsigned int next;
-		  unsigned int iterations;
-		  unsigned int valAtPeakStart;
-		  double comparison;
-
-		  // find leading edge by checking for successive increases
-		  for(unsigned int i=1; i<=data->size() - 2; i++) {
-				current = data->at(i);
-				next = data->at(i + 1);
-				comparison = ((double)next - (double)current) / current;
-				if (comparison > .2) {
-						  iterations++;
-						  if (iterations > 2) {
-								peaks[0] = i;
-								valAtPeakStart = current;
-								break;
-						  }
-				}
-				else {
-						  iterations = 0;
-				}
-		  }
-
-		  if (peaks[0] == 0){
-					 // didn't find leading edge, give up
-					 return peaks;
-		  }
-
-		  // found leading edge, look for where peak value goes below value at peak start
-		  for(unsigned int i=peaks[0] + 1; i<=data->size() - 1; i++) {
-					 current = data->at(i);
-					 if (current < valAtPeakStart){
-								peaks[1] = i;
-								break;
-					 }
-		  }
-
-		  return peaks;
-}
 
 void TPeakIntegrator::SlaveTerminate()
 {

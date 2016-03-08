@@ -1,4 +1,6 @@
-#include "TWaveScanner.h"
+#ifndef libfadc
+#include "fadc.h"
+#endif
 
 ClassImp(TWaveScanner);
 void TWaveScanner::Init(TTree *tree)
@@ -79,7 +81,7 @@ Bool_t TWaveScanner::Process(Long64_t entry)
 		  sprintf(title, "Event %d  ROC:%d SLOT:%d CHAN:%d", eventnum, rocid, slot, channel);
 		  TH1D *h = new TH1D("Waveform", title, Nbins, 0.0, (double)Nbins);
 
-		  unsigned int *peaks = FindPeakWindow(waveform);
+		  unsigned int *peaks = FindPeakWindow(waveform, .2, 2);
 		  unsigned int peakStart = *(peaks);
 		  unsigned int peakEnd = *(peaks + 1);
 
@@ -108,66 +110,6 @@ Bool_t TWaveScanner::Process(Long64_t entry)
    }
 
    return kTRUE;
-}
-
-void TWaveScanner::SetYAxisRange(double range)
-{
-	autoYAxis = false;
-	yAxisRange = range;
-}
-
-void TWaveScanner::SetAutoYAxis(bool autorange)
-{
-	autoYAxis = autorange;
-}
-
-void TWaveScanner::SetAnalysisChannel(short channel)
-{
-	analysisChannel = channel;
-}
-
-unsigned int * TWaveScanner::FindPeakWindow(std::vector<unsigned int> * data)
-{
-		  static unsigned int peaks[2] = {0, 0};
-		  unsigned int current;
-		  unsigned int next;
-		  unsigned int iterations;
-		  unsigned int valAtPeakStart;
-		  double comparison;
-
-		  // find leading edge by checking for successive increases
-		  for(unsigned int i=1; i<=data->size() - 2; i++) {
-				current = data->at(i);
-				next = data->at(i + 1);
-				comparison = ((double)next - (double)current) / current;
-				if (comparison > .2) {
-						  iterations++;
-						  if (iterations > 2) {
-								peaks[0] = i;
-								valAtPeakStart = current;
-								break;
-						  }
-				}
-				else {
-						  iterations = 0;
-				}
-		  }
-
-		  if (peaks[0] == 0){
-					 // didn't find leading edge, give up
-					 return peaks;
-		  }
-
-		  // found leading edge, look for where peak value goes below value at peak start
-		  for(unsigned int i=peaks[0] + 1; i<=data->size() - 1; i++) {
-					 current = data->at(i);
-					 if (current < valAtPeakStart){
-								peaks[1] = i;
-								break;
-					 }
-		  }
-
-		  return peaks;
 }
 
 unsigned int TWaveScanner::FindPeakMax(std::vector<unsigned int> * data)

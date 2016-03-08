@@ -38,3 +38,11 @@
 
 #Vagrant
 .vagrant/
+
+#temp
+*.swp
+*.bak
+
+#build objects
+/bin
+/build
