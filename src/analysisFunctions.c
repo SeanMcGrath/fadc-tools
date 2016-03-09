@@ -1,4 +1,44 @@
-#include "fadc.h"
+#include "fadclib.h"
+
+int mean(std::vector<unsigned int> * vec)
+{
+	int total = 0;
+	for (int i=0; i<vec->size(); i++) {
+		total += vec->at(i);
+	}
+
+	return total / vec->size();
+}
+
+unsigned int * FindPeakByMean(std::vector<unsigned int> * data)
+{
+	static unsigned int peaks[2] = {0, 0};
+	unsigned int avg = mean(data);
+	int i;
+	int reduced;
+
+	for (i=0; i<data->size(); i++)
+	{
+		reduced = (int)data->at(i) - avg;
+		if (reduced > 0) {
+			peaks[0] = i;
+			break;
+		}
+	}
+
+	i += 5;
+
+	for (i; i<data->size(); i++)
+	{
+		reduced = (int)data->at(i) - avg;
+		if (reduced < 0) {
+			peaks[1] = i;
+			break;
+		}
+	}
+	
+	return peaks;
+}
 
 // Detects start/end sample numbers of peak if they exist.
 // Threshold is a fraction representing the percent increase that must occur from one sample
@@ -6,7 +46,7 @@
 // iterations i the number of successive over-threshold increases that must occur for a peak to be detected.
 //
 // Returns [0, 0] if no peak is found 
-unsigned int * FindPeakWindow(std::vector<unsigned int> * data, double threshold, int iterations)
+unsigned int * FindPeakByIncreases(std::vector<unsigned int> * data, double threshold, int iterations)
 {
 		  static unsigned int peaks[2] = {0, 0};
 		  unsigned int current;
@@ -22,7 +62,7 @@ unsigned int * FindPeakWindow(std::vector<unsigned int> * data, double threshold
 				next = data->at(i + 1);
 				comparison = ((double)next - (double)current) / current;
 				if (comparison > threshold) {
-						  iterations++;
+						  iters++;
 						  if (iters > iterations) {
 								peaks[0] = i;
 								valAtPeakStart = current;

@@ -1,6 +1,8 @@
-#include "fadc.h"
+#include "fadclib.h"
 #include "stdlib.h"
 #include "argp.h"
+#include <TFile.h>
+#include <TApplication.h>
 
 using namespace std;
 
@@ -11,15 +13,16 @@ static char doc[] =
 	"Utility for viewing and extracting the data contained in fADC125 .root files.\n"
 	"COMMANDS:\n"
 	"	view 		see plots of all the waveforms in the root file.\n"
-	"	integrate	print a comma-separated list of pulse integrals\n"
-	"			and leading-edge times to standard out.\n"
+	"	analyze		print a comma-separated list of pulse integrals\n"
+	"			and leading-edge times to standard output.\n"
 	"\n"
 	"OPTIONS:\n";
 
 static char args_doc[] = "COMMAND CHANNEL ROOT_FILE";
 
 static struct argp_option options[] = {
-	{"yrange",	'y', "Y_RANGE", OPTION_ARG_OPTIONAL, "set Y_RANGE as the maximum Y value of displayed plots."},
+	{"peakmethod",	'p', "METHOD",	0, "Use METHOD to find the peak in the waveform. METHOD must be one of { average | fractional }"},
+	{"yrange",	'y', "Y_RANGE",	0, "set Y_RANGE as the maximum Y value of displayed plots."},
 	{ 0 }
 };
 
@@ -29,6 +32,7 @@ struct arguments
 	int channel;
 	char *rootFile;
 	double yrange;
+	enum PeakFindingMethod method;
 };
 
 static error_t
@@ -41,14 +45,27 @@ parse_opt (int key, char *arg, struct argp_state *state)
 		case 'y':
 			arguments->yrange = (double)strtof(arg, NULL);
 			break;
+		case 'p':
+			if (strcmp(arg, "average") == 0) {
+				arguments->method = byMean;
+			}
+			else if (strcmp(arg, "fractional") == 0) {
+				arguments->method = byIncreases;
+			}
+			break;
 
 		case ARGP_KEY_ARG:
-			if (state->arg_num >= 3)
+			if (state->arg_num >= 3) {
+				cout << "Too many arguments." << endl;
 				argp_usage(state);
+			}
 			else if (state->arg_num == 0)
 				arguments->command = arg;
 			else if (state->arg_num == 1)
-				arguments->channel = (int)strtol(arg, NULL, 10);
+				if (strcmp(arg, "all") == 0)
+					arguments->channel = -1;
+				else
+					arguments->channel = (int)strtol(arg, NULL, 10);
 			else if (state->arg_num == 2)
 				arguments->rootFile = arg;
 			break;
@@ -68,16 +85,12 @@ static struct argp argp = { options, parse_opt, args_doc, doc };
 
 // Main
 
-TFile *f;
-
 TTree * getRawData(char *fileName)
 {
-	f = new TFile(fileName);
+	TFile *f = new TFile(fileName);
 	TTree *Df125WindowRawData = (TTree*)f->Get("Df125WindowRawData");
 	return Df125WindowRawData;
 }
-
-void clean() { delete f; }
 
 int main(int argc, char *argv[])
 {
@@ -86,20 +99,28 @@ int main(int argc, char *argv[])
 	//defaults
 	arguments.yrange = 2000.0;
 	arguments.command = "";
+	arguments.method = none;
+	arguments.channel = 13;
+	arguments.rootFile = "";
 	
 	argp_parse(&argp, argc, argv, ARGP_NO_EXIT, 0, &arguments);
 
 	if (strcmp(arguments.command, "view") == 0) {
+		TApplication theApp("tapp", &argc, argv);
 		TTree *data = getRawData(arguments.rootFile);
+		TCanvas *canvas = new TCanvas("c1");
 		TWaveScanner scan;
 		scan.SetAnalysisChannel(arguments.channel);
 		scan.SetYAxisRange(arguments.yrange);
+		scan.SetPeakFindingMethod(arguments.method);
+		scan.SetCanvas(canvas);
 		data->Process(&scan);
 	}
-	else if (strcmp(arguments.command, "integrate") == 0) {
+	else if (strcmp(arguments.command, "analyze") == 0) {
 		TTree *data = getRawData(arguments.rootFile);
 		TPeakIntegrator integrator;
 		integrator.SetAnalysisChannel(arguments.channel);
+		integrator.SetPeakFindingMethod(arguments.method);
 		data->Process(&integrator);
 	}
 	else if (strcmp(arguments.command, "") != 0)

@@ -1,5 +1,5 @@
 CC = g++
-CC_FLAGS = $(shell root-config --cflags) -w 
+CC_FLAGS = $(shell root-config --cflags) -w
 LIB_FLAGS =  $(shell root-config --libs) 
 SHARED_FLAGS = -shared -fPIC $(CC_FLAGS) $(LIB_FLAGS)
 
@@ -22,7 +22,7 @@ $(TARGET_LIB): $(TARGET_DICT).cxx $(SOURCES)
 $(TARGET).o: $(TARGET_LIB)
 	$(CC) -o $(BUILD_DIR)/$@ $(TARGET).c -c $(CC_FLAGS) 
 
-$(TARGET_DICT).cxx: fadc.h LinkDef.h
+$(TARGET_DICT).cxx: fadclib.h LinkDef.h
 	rootcint -f $@ -c $^
 
 clean:

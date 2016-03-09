@@ -3,17 +3,24 @@
 #include <TStyle.h>
 #include <TROOT.h>
 #include <TChain.h>
-#include <TFile.h>
 #include <TSelector.h>
 #include <TCanvas.h>
-#include <TLine.h>
 
 // Header file for the classes stored in the TTree if any.
 #include <vector>
 #include <iostream>
 
+enum PeakFindingMethod
+{
+	byIncreases,
+	byMean,
+	none
+};
+
 // Analysis functions
-unsigned int * FindPeakWindow(std::vector<unsigned int> * data, double threshold, int iterations);
+int mean(std::vector<unsigned int> * vec);
+unsigned int * FindPeakByMean(std::vector<unsigned int> * data);
+unsigned int * FindPeakByIncreases(std::vector<unsigned int> * data, double threshold, int iterations);
 
 #define TWaveScanner_cxx
 class TWaveScanner : public TSelector {
@@ -60,6 +67,7 @@ public :
    // Analysis variables
    mutable int analysisChannel;
    mutable double yAxisRange;
+   mutable enum PeakFindingMethod peakMethod;
 
    TWaveScanner(TTree * /*tree*/ =0) : fChain(0) { }
    virtual ~TWaveScanner() { }
@@ -78,6 +86,8 @@ public :
    virtual void    Terminate();
    virtual void    SetYAxisRange(double range) { yAxisRange = range; }
    virtual void    SetAnalysisChannel(int channel) { analysisChannel = channel; }
+   virtual void    SetPeakFindingMethod(enum PeakFindingMethod method) { peakMethod = method; }
+   virtual void    SetCanvas(TCanvas *canvas) { c1 = canvas; }
 
    // Analysis functions
    virtual unsigned int FindPeakMax(std::vector<unsigned int> * data);
@@ -128,8 +138,9 @@ public :
    TBranch        *b_overflow;   //!
 
    // Analysis variables
-   mutable int analysisChannel = 13;
-   mutable double yAxisRange = 2000.0;
+   mutable int analysisChannel;
+   mutable double yAxisRange;
+   mutable enum PeakFindingMethod peakMethod;
    std::vector<UInt_t> integrals;
    std::vector<UInt_t> leading_edge_times;
 
@@ -149,6 +160,7 @@ public :
    virtual void    SlaveTerminate();
    virtual void    Terminate();
    virtual void    SetAnalysisChannel(int channel) { analysisChannel = channel; }
+   virtual void    SetPeakFindingMethod(enum PeakFindingMethod method) { peakMethod = method; }
 
    ClassDef(TPeakIntegrator,1);
 };

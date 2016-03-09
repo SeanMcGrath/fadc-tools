@@ -1,8 +1,11 @@
 #ifndef libfadc
-#include "fadc.h"
+#include "fadclib.h"
 #endif
 
+#include <TLine.h>
+
 ClassImp(TWaveScanner);
+
 void TWaveScanner::Init(TTree *tree)
 {
    // The Init() function is called when the selector needs to initialize
@@ -56,8 +59,7 @@ void TWaveScanner::Begin(TTree * /*tree*/)
    // The tree argument is deprecated (on PROOF 0 is passed).
 
    TString option = GetOption();
-   c1 = new TCanvas("c1");
-	c1->Draw();
+   c1->Draw();
 }
 
 void TWaveScanner::SlaveBegin(TTree * /*tree*/)
@@ -75,13 +77,29 @@ Bool_t TWaveScanner::Process(Long64_t entry)
 
   GetEntry(entry);
    
-   if (channel==analysisChannel) {
+   if (channel==analysisChannel || analysisChannel < 0) {
 		  int Nbins = waveform->size();
 		  char title[256];
 		  sprintf(title, "Event %d  ROC:%d SLOT:%d CHAN:%d", eventnum, rocid, slot, channel);
 		  TH1D *h = new TH1D("Waveform", title, Nbins, 0.0, (double)Nbins);
 
-		  unsigned int *peaks = FindPeakWindow(waveform, .2, 2);
+
+		  unsigned int *peaks;
+
+		  switch (peakMethod) 
+		  {
+			case byIncreases:
+				peaks = FindPeakByIncreases(waveform, .2, 2);
+				break;
+			case byMean:
+				peaks = FindPeakByMean(waveform);
+				break;
+			case none:
+				unsigned int temp[2] = {0, 0};
+				peaks = &temp[0];
+				break;
+		  }
+
 		  unsigned int peakStart = *(peaks);
 		  unsigned int peakEnd = *(peaks + 1);
 
