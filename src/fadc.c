@@ -1,8 +1,9 @@
-#include "fadclib.h"
 #include "stdlib.h"
 #include "argp.h"
 #include <TFile.h>
 #include <TApplication.h>
+#include "TWaveScanner.h"
+#include "TPeakIntegrator.h"
 
 using namespace std;
 

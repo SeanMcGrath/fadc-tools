@@ -1,6 +1,5 @@
-#ifndef libfadc
-#include "fadclib.h"
-#endif
+#include "TPeakIntegrator.h"
+#include "analysisFunctions.h"
 
 ClassImp(TPeakIntegrator);
 void TPeakIntegrator::Init(TTree *tree)

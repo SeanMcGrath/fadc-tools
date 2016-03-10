@@ -1,7 +1,5 @@
-#ifndef libfadc
-#include "fadclib.h"
-#endif
-
+#include "TWaveScanner.h"
+#include "analysisFunctions.h"
 #include <TLine.h>
 
 ClassImp(TWaveScanner);

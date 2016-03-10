@@ -1,4 +1,4 @@
-#include "fadclib.h"
+#include "analysisFunctions.h"
 
 int mean(std::vector<unsigned int> * vec)
 {
