@@ -17,6 +17,8 @@ static char doc[] =
 	"	analyze		print a comma-separated list of pulse integrals\n"
 	"			and leading-edge times to standard output.\n"
 	"\n"
+	"CHANNEL: The number of the desired FADC channel, or 'all' to see all channels.\n"
+	"\n"
 	"OPTIONS:\n";
 
 static char args_doc[] = "COMMAND CHANNEL ROOT_FILE";
