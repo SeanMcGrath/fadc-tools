@@ -4,133 +4,137 @@
 ClassImp(TPeakIntegrator);
 void TPeakIntegrator::Init(TTree *tree)
 {
-   // The Init() function is called when the selector needs to initialize
-   // a new tree or chain. Typically here the branch addresses and branch
-   // pointers of the tree will be set.
-   // It is normally not necessary to make changes to the generated
-   // code, but the routine can be extended by the user if needed.
-   // Init() will be called many times when running on PROOF
-   // (once per file to be processed).
+// The Init() function is called when the selector needs to initialize
+// a new tree or chain. Typically here the branch addresses and branch
+// pointers of the tree will be set.
+// It is normally not necessary to make changes to the generated
+// code, but the routine can be extended by the user if needed.
+// Init() will be called many times when running on PROOF
+// (once per file to be processed).
 
-   // Set object pointer
-   waveform = 0;
-   // Set branch addresses and branch pointers
-   //if (!tree) return;
-   fChain = tree;
-   fChain->SetMakeClass(1);
+// Set object pointer
+    waveform = 0;
+// Set branch addresses and branch pointers
+//if (!tree) return;
+    fChain = tree;
+    fChain->SetMakeClass(1);
 
-   fChain->SetBranchAddress("channelnum", &channelnum, &b_channelnum);
-   fChain->SetBranchAddress("eventnum", &eventnum, &b_eventnum);
-   fChain->SetBranchAddress("rocid", &rocid, &b_rocid);
-   fChain->SetBranchAddress("slot", &slot, &b_slot);
-   fChain->SetBranchAddress("channel", &channel, &b_channel);
-   fChain->SetBranchAddress("itrigger", &itrigger, &b_itrigger);
-   fChain->SetBranchAddress("waveform", &waveform, &b_waveform);
-   fChain->SetBranchAddress("nsamples", &nsamples, &b_nsamples);
-   fChain->SetBranchAddress("w_integral", &w_integral, &b_w_integral);
-   fChain->SetBranchAddress("w_min", &w_min, &b_w_min);
-   fChain->SetBranchAddress("w_max", &w_max, &b_w_max);
-   fChain->SetBranchAddress("w_samp1", &w_samp1, &b_w_samp1);
-   fChain->SetBranchAddress("w_ped", &w_ped, &b_w_ped);
-   fChain->SetBranchAddress("w_time", &w_time, &b_w_time);
-   fChain->SetBranchAddress("invalid_samples", &invalid_samples, &b_invalid_samples);
-   fChain->SetBranchAddress("overflow", &overflow, &b_overflow);
+    fChain->SetBranchAddress("channelnum", &channelnum, &b_channelnum);
+    fChain->SetBranchAddress("eventnum", &eventnum, &b_eventnum);
+    fChain->SetBranchAddress("rocid", &rocid, &b_rocid);
+    fChain->SetBranchAddress("slot", &slot, &b_slot);
+    fChain->SetBranchAddress("channel", &channel, &b_channel);
+    fChain->SetBranchAddress("itrigger", &itrigger, &b_itrigger);
+    fChain->SetBranchAddress("waveform", &waveform, &b_waveform);
+    fChain->SetBranchAddress("nsamples", &nsamples, &b_nsamples);
+    fChain->SetBranchAddress("w_integral", &w_integral, &b_w_integral);
+    fChain->SetBranchAddress("w_min", &w_min, &b_w_min);
+    fChain->SetBranchAddress("w_max", &w_max, &b_w_max);
+    fChain->SetBranchAddress("w_samp1", &w_samp1, &b_w_samp1);
+    fChain->SetBranchAddress("w_ped", &w_ped, &b_w_ped);
+    fChain->SetBranchAddress("w_time", &w_time, &b_w_time);
+    fChain->SetBranchAddress("invalid_samples", &invalid_samples, &b_invalid_samples);
+    fChain->SetBranchAddress("overflow", &overflow, &b_overflow);
+
 }
 
 Bool_t TPeakIntegrator::Notify()
 {
-   // The Notify() function is called when a new file is opened. This
-   // can be either for a new TTree in a TChain or when when a new TTree
-   // is started when using PROOF. It is normally not necessary to make changes
-   // to the generated code, but the routine can be extended by the
-   // user if needed. The return value is currently not used.
+// The Notify() function is called when a new file is opened. This
+// can be either for a new TTree in a TChain or when when a new TTree
+// is started when using PROOF. It is normally not necessary to make changes
+// to the generated code, but the routine can be extended by the
+// user if needed. The return value is currently not used.
 
-   return kTRUE;
+    return kTRUE;
 }
 
 void TPeakIntegrator::Begin(TTree * /*tree*/)
 {
-   // The Begin() function is called at the start of the query.
-   // When running with PROOF Begin() is only called on the client.
-   // The tree argument is deprecated (on PROOF 0 is passed).
+// The Begin() function is called at the start of the query.
+// When running with PROOF Begin() is only called on the client.
+// The tree argument is deprecated (on PROOF 0 is passed).
 
-   TString option = GetOption();
+    TString option = GetOption();
 }
 
 void TPeakIntegrator::SlaveBegin(TTree * /*tree*/)
 {
-   // The SlaveBegin() function is called after the Begin() function.
-   // When running with PROOF SlaveBegin() is called on each slave server.
-   // The tree argument is deprecated (on PROOF 0 is passed).
+// The SlaveBegin() function is called after the Begin() function.
+// When running with PROOF SlaveBegin() is called on each slave server.
+// The tree argument is deprecated (on PROOF 0 is passed).
 
-   TString option = GetOption();
+    TString option = GetOption();
 
 }
 
 Bool_t TPeakIntegrator::Process(Long64_t entry)
 {
 
-  GetEntry(entry);
-   
-   if (channel==analysisChannel) {
-		  int Nbins = waveform->size();
+    GetEntry(entry);
 
-		  unsigned int *peaks;
+    if (channel==analysisChannel) {
+        int Nbins = waveform->size();
 
-		  switch (peakMethod) 
-		  {
-			case byIncreases:
-				peaks = FindPeakByIncreases(waveform, .2, 2);
-				break;
-			case byMean:
-				peaks = FindPeakByMean(waveform);
-				break;
-			case none:
-				unsigned int temp[2] = {0, 0};
-				peaks = &temp[0];
-				break;
-		  }
+        unsigned int *peaks;
 
-		  unsigned int peakStart = *(peaks);
-		  unsigned int peakEnd = *(peaks + 1);
+        switch (peakMethod) 
+          {
+            case byIncreases:
+                peaks = FindPeakByIncreases(waveform, .2, 2);
+                break;
+            case byMean:
+                peaks = FindPeakByMean(waveform);
+                break;
+            case none:
+                unsigned int temp[2] = {0, 0};
+                peaks = &temp[0];
+                break;
+          }
 
-		  unsigned int binValue;
-		  unsigned int wave_integral = 0;
+        unsigned int peakStart = *(peaks);
+        unsigned int peakEnd = *(peaks + 1);
 
-		  for(unsigned int ibin=1; ibin<=Nbins; ibin++) {
-			  binValue = waveform->at(ibin-1);
-			  if (binValue >= peakStart && binValue <= peakEnd) {
-				  wave_integral = wave_integral + binValue;
-			  }
-		  }
+        std::cout << peakStart << "," << peakEnd << std::endl;
 
-		  // Peak found
-		  if (wave_integral > 0 && peakEnd - peakStart > 1){
-			  integrals.push_back(wave_integral);
-			  leading_edge_times.push_back(peakStart);
-		  }
-   }
+        unsigned int binValue;
+        unsigned int wave_integral = 0;
 
-   return kTRUE;
+        for(unsigned int ibin=1; ibin<=Nbins; ibin++) {
+            binValue = waveform->at(ibin-1);
+            if (binValue >= peakStart && binValue <= peakEnd) {
+                wave_integral = wave_integral + binValue;
+            }
+        }
+
+// Peak found
+        if (wave_integral > 0 && peakEnd - peakStart > 1){
+            integrals.push_back(wave_integral);
+            leading_edge_times.push_back(peakStart);
+        }
+    }
+
+    return kTRUE;
 }
 
 
 void TPeakIntegrator::SlaveTerminate()
 {
-   // The SlaveTerminate() function is called after all entries or objects
-   // have been processed. When running with PROOF SlaveTerminate() is called
-   // on each slave server.
+// The SlaveTerminate() function is called after all entries or objects
+// have been processed. When running with PROOF SlaveTerminate() is called
+// on each slave server.
 
 }
 
 void TPeakIntegrator::Terminate()
 {
-   // The Terminate() function is the last function to be called during
-   // a query. It always runs on the client, it can be used to present
-   // the results graphically or save the results to file.
+// The Terminate() function is the last function to be called during
+// a query. It always runs on the client, it can be used to present
+// the results graphically or save the results to file.
 
-	std::cout << "Wave integral, Wave Leading Edge" << std::endl;
-	for(int j = 0; j < integrals.size(); j++){
-		std::cout << integrals[j] << "," << leading_edge_times[j] << std::endl;
-	}
+    // do printing
+    std::cout << "Wave integral, Wave Leading Edge" << std::endl;
+    for(int j = 0; j < integrals.size(); j++){
+        std::cout << integrals[j] << "," << leading_edge_times[j] << std::endl;
+    }
 }

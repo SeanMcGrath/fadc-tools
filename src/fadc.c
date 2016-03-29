@@ -1,5 +1,6 @@
 #include "stdlib.h"
 #include "argp.h"
+#include <fstream>
 #include <TFile.h>
 #include <TApplication.h>
 #include "TWaveScanner.h"
@@ -26,14 +27,16 @@ static char args_doc[] = "COMMAND CHANNEL ROOT_FILE";
 static struct argp_option options[] = {
 	{"peakmethod",	'p', "METHOD",	0, "Use METHOD to find the peak in the waveform. METHOD must be one of { average | fractional }"},
 	{"yrange",	'y', "Y_RANGE",	0, "set Y_RANGE as the maximum Y value of displayed plots."},
+	{"outfile",	'o', "OUT_FILE", 0, "Print analysis results to OUT_FILE."},
 	{ 0 }
 };
 
 struct arguments
 {
 	char *command;
-	int channel;
 	char *rootFile;
+	char *outFile;
+	int channel;
 	double yrange;
 	enum PeakFindingMethod method;
 };
@@ -55,6 +58,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
 			else if (strcmp(arg, "fractional") == 0) {
 				arguments->method = byIncreases;
 			}
+			break;
+		case 'o':
+			arguments->outFile = arg;
 			break;
 
 		case ARGP_KEY_ARG:
@@ -105,6 +111,7 @@ int main(int argc, char *argv[])
 	arguments.method = none;
 	arguments.channel = 13;
 	arguments.rootFile = "";
+	arguments.outFile = 0;
 	
 	argp_parse(&argp, argc, argv, ARGP_NO_EXIT, 0, &arguments);
 
@@ -119,14 +126,27 @@ int main(int argc, char *argv[])
 		scan.SetCanvas(canvas);
 		data->Process(&scan);
 	}
+
 	else if (strcmp(arguments.command, "analyze") == 0) {
+		streambuf * coutbuf;
+		ofstream outFile;
+		if (arguments.outFile != 0){
+			outFile.open(arguments.outFile);
+			coutbuf = cout.rdbuf();
+			cout.rdbuf(outFile.rdbuf());
+		}
 		TTree *data = getRawData(arguments.rootFile);
 		TPeakIntegrator integrator;
 		integrator.SetAnalysisChannel(arguments.channel);
 		integrator.SetPeakFindingMethod(arguments.method);
 		data->Process(&integrator);
+		if (arguments.outFile != 0){
+			cout.rdbuf(coutbuf);
+		}
 	}
+
 	else if (strcmp(arguments.command, "") != 0)
 		cout << "unknown command: " << arguments.command << endl;
+
 	return 0;	
 }
