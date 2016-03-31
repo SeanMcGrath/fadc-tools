@@ -55,6 +55,7 @@ public :
    mutable int analysisChannel;
    mutable double yAxisRange;
    mutable enum PeakFindingMethod peakMethod;
+   mutable int minIntegral; // integral must > this value to appear in output
    std::vector<UInt_t> integrals;
    std::vector<UInt_t> leading_edge_times;
 
@@ -75,6 +76,14 @@ public :
    virtual void    Terminate();
    virtual void    SetAnalysisChannel(int channel) { analysisChannel = channel; }
    virtual void    SetPeakFindingMethod(enum PeakFindingMethod method) { peakMethod = method; }
+   virtual void    SetMinIntegral(int min) { 
+	   if(min > 0){
+		   minIntegral = min;
+	   }
+	   else {
+		   minIntegral = 0;
+	   }
+   }
 
    ClassDef(TPeakIntegrator,1);
 };

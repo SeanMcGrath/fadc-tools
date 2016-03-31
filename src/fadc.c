@@ -28,6 +28,7 @@ static struct argp_option options[] = {
 	{"peakmethod",	'p', "METHOD",	0, "Use METHOD to find the peak in the waveform. METHOD must be one of { average | fractional }"},
 	{"yrange",	'y', "Y_RANGE",	0, "set Y_RANGE as the maximum Y value of displayed plots."},
 	{"outfile",	'o', "OUT_FILE", 0, "Print analysis results to OUT_FILE."},
+	{"min-integral",'m', "MIN_INTEGRAL", 0, "Reject waves with integral less than MIN_INTEGRAL"},
 	{ 0 }
 };
 
@@ -37,6 +38,7 @@ struct arguments
 	char *rootFile;
 	char *outFile;
 	int channel;
+	int minIntegral;
 	double yrange;
 	enum PeakFindingMethod method;
 };
@@ -62,6 +64,8 @@ parse_opt (int key, char *arg, struct argp_state *state)
 		case 'o':
 			arguments->outFile = arg;
 			break;
+		case 'm':
+			arguments->minIntegral = (int)strtol(arg, NULL, 10);
 
 		case ARGP_KEY_ARG:
 			if (state->arg_num >= 3) {
@@ -112,6 +116,7 @@ int main(int argc, char *argv[])
 	arguments.channel = 13;
 	arguments.rootFile = "";
 	arguments.outFile = 0;
+	arguments.minIntegral = 0;
 	
 	argp_parse(&argp, argc, argv, ARGP_NO_EXIT, 0, &arguments);
 
@@ -139,6 +144,7 @@ int main(int argc, char *argv[])
 		TPeakIntegrator integrator;
 		integrator.SetAnalysisChannel(arguments.channel);
 		integrator.SetPeakFindingMethod(arguments.method);
+		integrator.SetMinIntegral(arguments.minIntegral);
 		data->Process(&integrator);
 		if (arguments.outFile != 0){
 			cout.rdbuf(coutbuf);

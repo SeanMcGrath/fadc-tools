@@ -95,8 +95,6 @@ Bool_t TPeakIntegrator::Process(Long64_t entry)
         unsigned int peakStart = *(peaks);
         unsigned int peakEnd = *(peaks + 1);
 
-        std::cout << peakStart << "," << peakEnd << std::endl;
-
         unsigned int binValue;
         unsigned int wave_integral = 0;
 
@@ -108,7 +106,7 @@ Bool_t TPeakIntegrator::Process(Long64_t entry)
         }
 
 // Peak found
-        if (wave_integral > 0 && peakEnd - peakStart > 1){
+        if (wave_integral > minIntegral && peakEnd - peakStart > 1){
             integrals.push_back(wave_integral);
             leading_edge_times.push_back(peakStart);
         }
