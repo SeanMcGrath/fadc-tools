@@ -25,7 +25,7 @@ static char doc[] =
 static char args_doc[] = "COMMAND CHANNEL ROOT_FILE";
 
 static struct argp_option options[] = {
-	{"peakmethod",	'p', "METHOD",	0, "Use METHOD to find the peak in the waveform. METHOD must be one of { average | fractional }"},
+	{"peakmethod",	'p', "METHOD",	0, "Use METHOD to find the peak in the waveform. METHOD must be one of { average | fractional | constfrac }"},
 	{"yrange",	'y', "Y_RANGE",	0, "set Y_RANGE as the maximum Y value of displayed plots."},
 	{"outfile",	'o', "OUT_FILE", 0, "Print analysis results to OUT_FILE."},
 	{"min-integral",'m', "MIN_INTEGRAL", 0, "Reject waves with integral less than MIN_INTEGRAL"},
@@ -59,6 +59,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
 			}
 			else if (strcmp(arg, "fractional") == 0) {
 				arguments->method = byIncreases;
+			}
+			else if (strcmp(arg, "constfrac") == 0) {
+				arguments->method = byConstFraction;
 			}
 			break;
 		case 'o':

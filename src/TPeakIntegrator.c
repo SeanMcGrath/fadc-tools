@@ -76,23 +76,9 @@ Bool_t TPeakIntegrator::Process(Long64_t entry)
     if (channel==analysisChannel) {
         int Nbins = waveform->size();
 
-        unsigned int *peaks;
+        unsigned int *peaks = FindPeak(waveform, peakMethod);
 
-        switch (peakMethod) 
-          {
-            case byIncreases:
-                peaks = FindPeakByIncreases(waveform, .2, 2);
-                break;
-            case byMean:
-                peaks = FindPeakByMean(waveform);
-                break;
-            case none:
-                unsigned int temp[2] = {0, 0};
-                peaks = &temp[0];
-                break;
-          }
-
-        unsigned int peakStart = *(peaks);
+	unsigned int peakStart = *(peaks);
         unsigned int peakEnd = *(peaks + 1);
 
         unsigned int binValue;

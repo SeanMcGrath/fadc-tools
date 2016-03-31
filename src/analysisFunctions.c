@@ -10,6 +10,20 @@ int mean(std::vector<unsigned int> * vec)
 	return total / vec->size();
 }
 
+unsigned int peakMax(std::vector<unsigned int> * vec){
+
+	unsigned int max = 0;
+	unsigned int current;
+	for (int i = 0; i < vec->size(); i++){
+		current = vec->at(i);
+		if (current > max) {
+			max = current;
+		}
+	}
+
+	return max;
+}
+
 unsigned int * FindPeakByMean(std::vector<unsigned int> * data)
 {
 	static unsigned int peaks[2] = {0, 0};
@@ -89,4 +103,73 @@ unsigned int * FindPeakByIncreases(std::vector<unsigned int> * data, double thre
 
 		  peaks[1] = i;
 		  return peaks;
+}
+
+// Detects start/end of peak by continuous fraction method.
+// finds wave baseline by averaging over first 50 samples,
+// then finds when wave goes above/below (baseline + peak_max*threshold)
+unsigned int * FindPeakByConstantFraction(std::vector<unsigned int> * data, double threshold)
+{
+	static unsigned int peaks[2] = {0, 0};
+	unsigned int current;
+	double comparison;
+	std::vector<unsigned int> subvec = std::vector<unsigned int>(data->begin(), data->begin() + 49);
+	unsigned int avg = mean(&subvec);
+	unsigned int max = peakMax(data);
+	double thresholdVal = avg + max*threshold;
+	unsigned int i;
+
+	// find peak start
+	for (i=50; i < data->size(); i++) {
+		current = data->at(i);
+		if (current > thresholdVal) {
+			peaks[0] = i;
+			break;
+		}
+	}
+
+	// find peak end
+	if (peaks[0] != 0) {
+
+		for (i; i < data->size(); i++) {
+			current = data->at(i);
+			if (current < thresholdVal) {
+				peaks[1] = i;
+				break;
+			}
+		}
+
+		// no peak end found, set peak end to last value in wave
+		if (peaks[1] == 0) {
+			peaks[1] = i;
+		}
+
+	}
+
+	return peaks;
+
+}
+
+unsigned int * FindPeak(std::vector<unsigned int> * data, enum PeakFindingMethod method)
+{
+	unsigned int * peaks;
+
+	switch (method) 
+	{
+            case byIncreases:
+                peaks = FindPeakByIncreases(data, .2, 2);
+                break;
+            case byMean:
+                peaks = FindPeakByMean(data);
+                break;
+	    case byConstFraction:
+		peaks = FindPeakByConstantFraction(data, 0.1);
+		break;
+            case none:
+		unsigned int temp[2] = {0, 0};
+		peaks = &temp[0];
+                break;
+	}
+
+	return peaks;
 }
