@@ -86,7 +86,7 @@ Bool_t TPeakIntegrator::Process(Long64_t entry)
 
         for(unsigned int ibin=1; ibin<=Nbins; ibin++) {
             binValue = waveform->at(ibin-1);
-            if (binValue >= peakStart && binValue <= peakEnd) {
+            if (ibin >= peakStart && ibin <= peakEnd) {
                 wave_integral = wave_integral + binValue;
             }
         }
