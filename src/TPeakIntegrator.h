@@ -56,8 +56,8 @@ public :
    mutable double yAxisRange;
    mutable enum PeakFindingMethod peakMethod;
    mutable int minIntegral; // integral must > this value to appear in output
-   std::vector<UInt_t> integrals;
-   std::vector<UInt_t> leading_edge_times;
+   std::vector<unsigned int> * integrals;
+   std::vector<unsigned int> * leading_edge_times;
 
    TPeakIntegrator(TTree * /*tree*/ =0) : fChain(0) { }
    virtual ~TPeakIntegrator() { }

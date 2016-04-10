@@ -1,6 +1,8 @@
 #include "TPeakIntegrator.h"
 #include "analysisFunctions.h"
 
+#define MAX_CHANNEL 256
+
 ClassImp(TPeakIntegrator);
 void TPeakIntegrator::Init(TTree *tree)
 {
@@ -14,6 +16,9 @@ void TPeakIntegrator::Init(TTree *tree)
 
 // Set object pointer
     waveform = 0;
+    integrals = new std::vector<unsigned int>[MAX_CHANNEL];
+    leading_edge_times = new std::vector<unsigned int>[MAX_CHANNEL];
+
 // Set branch addresses and branch pointers
 //if (!tree) return;
     fChain = tree;
@@ -73,28 +78,39 @@ Bool_t TPeakIntegrator::Process(Long64_t entry)
 
     GetEntry(entry);
 
-    if (channel==analysisChannel) {
+    if (channel==analysisChannel || analysisChannel < 0) {
         int Nbins = waveform->size();
 
         unsigned int *peaks = FindPeak(waveform, peakMethod);
 
-	unsigned int peakStart = *(peaks);
+        unsigned int peakStart = *(peaks);
         unsigned int peakEnd = *(peaks + 1);
+
+        if (peakStart == 0 && peakEnd == 0)
+            return kTRUE;
+        if (peakEnd >= Nbins)
+            peakEnd = Nbins - 1;
 
         unsigned int binValue;
         unsigned int wave_integral = 0;
 
         for(unsigned int ibin=peakStart; ibin<=peakEnd; ibin++) {
-            binValue = waveform->at(ibin);
-	    wave_integral = wave_integral + binValue;
+            try {
+                binValue = waveform->at(ibin);
+                wave_integral = wave_integral + binValue;
+            }
+            catch (...) {
+                std::cout << ibin;
+            }
+
         }
 
 // Peak found
-        if (wave_integral > minIntegral && peakEnd - peakStart > 1){
-            integrals.push_back(wave_integral);
-            leading_edge_times.push_back(peakStart);
+        if (wave_integral > minIntegral){
+            integrals[channel].push_back(wave_integral);
+            leading_edge_times[channel].push_back(peakStart);
         }
-    }
+    }  
 
     return kTRUE;
 }
@@ -115,8 +131,21 @@ void TPeakIntegrator::Terminate()
 // the results graphically or save the results to file.
 
     // do printing
-    std::cout << "Wave integral, Wave Leading Edge" << std::endl;
-    for(int j = 0; j < integrals.size(); j++){
-        std::cout << integrals[j] << "," << leading_edge_times[j] << std::endl;
+    std::vector<unsigned int> chan_integrals;
+    std::vector<unsigned int> chan_times;
+    for(int j = 0; j < MAX_CHANNEL; j++){
+        chan_integrals = integrals[j];
+        chan_times = leading_edge_times[j]; 
+    
+        if (!chan_integrals.empty()){
+            std::cout << "Channel " << j << std::endl;
+            std::cout << "Wave integral, Wave Leading Edge" << std::endl;
+            for(int k = 0; k < chan_integrals.size(); k++){
+                std::cout << chan_integrals.at(k) << "," << chan_times.at(k) << std::endl;
+            }
+            std::cout << std::endl;
+        }
+
+
     }
 }
