@@ -116,6 +116,9 @@ unsigned int * FindPeakByConstantFraction(std::vector<unsigned int> * data, doub
 	std::vector<unsigned int> subvec = std::vector<unsigned int>(data->begin(), data->begin() + 19);
 	unsigned int avg = mean(&subvec);
 	unsigned int max = peakMax(data);
+	if ((max - avg) < (avg*threshold))
+		return peaks;
+
 	double thresholdVal = avg + max*threshold;
 	unsigned int i;
 
@@ -150,20 +153,23 @@ unsigned int * FindPeakByConstantFraction(std::vector<unsigned int> * data, doub
 
 }
 
-unsigned int * FindPeak(std::vector<unsigned int> * data, enum PeakFindingMethod method)
+unsigned int * FindPeak(
+		std::vector<unsigned int> * data,
+		enum PeakFindingMethod method,
+		struct PeakFindingOptions options)
 {
 	unsigned int * peaks;
 
 	switch (method) 
 	{
             case byIncreases:
-                peaks = FindPeakByIncreases(data, .2, 2);
+                peaks = FindPeakByIncreases(data, options.threshold, options.iterations);
                 break;
             case byMean:
                 peaks = FindPeakByMean(data);
                 break;
 	    case byConstFraction:
-		peaks = FindPeakByConstantFraction(data, 0.1);
+		peaks = FindPeakByConstantFraction(data, options.threshold);
 		break;
             case none:
 		unsigned int temp[2] = {0, 0};

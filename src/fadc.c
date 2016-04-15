@@ -29,6 +29,7 @@ static struct argp_option options[] = {
 	{"yrange",	'y', "Y_RANGE",	0, "set Y_RANGE as the maximum Y value of displayed plots."},
 	{"outfile",	'o', "OUT_FILE", 0, "Print analysis results to OUT_FILE."},
 	{"min-integral",'m', "MIN_INTEGRAL", 0, "Reject waves with integral less than MIN_INTEGRAL"},
+	{"threshold",	't', "THRESHOLD", 0, "Use THRESHOLD as the fractional threshold value for the fractional and constfrac peak finding methods"},
 	{ 0 }
 };
 
@@ -41,6 +42,7 @@ struct arguments
 	int minIntegral;
 	double yrange;
 	enum PeakFindingMethod method;
+	double threshold;
 };
 
 static error_t
@@ -69,6 +71,8 @@ parse_opt (int key, char *arg, struct argp_state *state)
 			break;
 		case 'm':
 			arguments->minIntegral = (int)strtol(arg, NULL, 10);
+		case 't':
+			arguments->threshold = atof(arg);
 
 		case ARGP_KEY_ARG:
 			if (state->arg_num >= 3) {
@@ -120,6 +124,7 @@ int main(int argc, char *argv[])
 	arguments.rootFile = "";
 	arguments.outFile = 0;
 	arguments.minIntegral = 0;
+	arguments.threshold = 0.1;
 	
 	argp_parse(&argp, argc, argv, ARGP_NO_EXIT, 0, &arguments);
 
@@ -131,6 +136,8 @@ int main(int argc, char *argv[])
 		scan.SetAnalysisChannel(arguments.channel);
 		scan.SetYAxisRange(arguments.yrange);
 		scan.SetPeakFindingMethod(arguments.method);
+		scan.SetPeakThreshold(arguments.threshold);
+		scan.SetPeakIterations(3);
 		scan.SetCanvas(canvas);
 		data->Process(&scan);
 	}
@@ -148,6 +155,8 @@ int main(int argc, char *argv[])
 		integrator.SetAnalysisChannel(arguments.channel);
 		integrator.SetPeakFindingMethod(arguments.method);
 		integrator.SetMinIntegral(arguments.minIntegral);
+		integrator.SetPeakThreshold(arguments.threshold);
+		integrator.SetPeakIterations(3);
 		data->Process(&integrator);
 		if (arguments.outFile != 0){
 			cout.rdbuf(coutbuf);

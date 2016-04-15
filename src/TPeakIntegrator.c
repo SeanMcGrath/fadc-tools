@@ -81,13 +81,16 @@ Bool_t TPeakIntegrator::Process(Long64_t entry)
     if (channel==analysisChannel || analysisChannel < 0) {
         int Nbins = waveform->size();
 
-        unsigned int *peaks = FindPeak(waveform, peakMethod);
+        unsigned int *peaks = FindPeak(waveform, peakMethod, peakOptions);
 
         unsigned int peakStart = *(peaks);
         unsigned int peakEnd = *(peaks + 1);
 
+	// No Peak
         if (peakStart == 0 && peakEnd == 0)
             return kTRUE;
+
+	// Peak starts, but doesn't end
         if (peakEnd >= Nbins)
             peakEnd = Nbins - 1;
 

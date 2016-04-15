@@ -81,7 +81,7 @@ Bool_t TWaveScanner::Process(Long64_t entry)
 		  sprintf(title, "Event %d  ROC:%d SLOT:%d CHAN:%d", eventnum, rocid, slot, channel);
 		  TH1D *h = new TH1D("Waveform", title, Nbins, 0.0, (double)Nbins);
 
-		  unsigned int *peaks = FindPeak(waveform, peakMethod);
+		  unsigned int *peaks = FindPeak(waveform, peakMethod, peakOptions);
 
 		  unsigned int peakStart = *(peaks);
 		  unsigned int peakEnd = *(peaks + 1);

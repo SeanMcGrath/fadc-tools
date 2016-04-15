@@ -57,6 +57,7 @@ public :
    mutable int analysisChannel;
    mutable double yAxisRange;
    mutable enum PeakFindingMethod peakMethod;
+   struct PeakFindingOptions peakOptions;
 
    TWaveScanner(TTree * /*tree*/ =0) : fChain(0) { }
    virtual ~TWaveScanner() { }
@@ -77,6 +78,18 @@ public :
    virtual void    SetAnalysisChannel(int channel) { analysisChannel = channel; }
    virtual void    SetPeakFindingMethod(enum PeakFindingMethod method) { peakMethod = method; }
    virtual void    SetCanvas(TCanvas *canvas) { c1 = canvas; }
+   virtual void    SetPeakThreshold(double threshold){
+	   if (threshold > 0)
+		   peakOptions.threshold = threshold;
+	   else
+		   peakOptions.threshold = 0;
+   }
+   virtual void    SetPeakIterations(int iterations){
+	   if (iterations > 0)
+		   peakOptions.iterations = iterations;
+	   else
+		   peakOptions.iterations = 1;
+   }
 
    // Analysis functions
    virtual unsigned int FindPeakMax(std::vector<unsigned int> * data);
