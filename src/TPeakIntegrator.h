@@ -95,6 +95,12 @@ public :
 	   else
 		   peakOptions.iterations = 1;
    }
+   virtual void    SetBaselineSamples(int samples){
+	   if (samples > 1)
+		   peakOptions.baselineSamples = samples;
+	   else
+		   peakOptions.baselineSamples = 1;
+   }
 
    ClassDef(TPeakIntegrator,1);
 };

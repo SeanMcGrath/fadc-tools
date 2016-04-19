@@ -14,6 +14,7 @@ struct PeakFindingOptions
 {
 	double threshold;
 	int iterations;
+	int baselineSamples;
 };
 
 // Analysis functions

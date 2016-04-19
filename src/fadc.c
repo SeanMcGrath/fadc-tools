@@ -30,6 +30,7 @@ static struct argp_option options[] = {
 	{"outfile",	'o', "OUT_FILE", 0, "Print analysis results to OUT_FILE."},
 	{"min-integral",'m', "MIN_INTEGRAL", 0, "Reject waves with integral less than MIN_INTEGRAL"},
 	{"threshold",	't', "THRESHOLD", 0, "Use THRESHOLD as the fractional threshold value for the fractional and constfrac peak finding methods"},
+	{"samples",	's', "SAMPLES", 0, "For the constant fraction method, calculate the sample baseline over the first SAMPLES samples in each waveform"},
 	{ 0 }
 };
 
@@ -40,6 +41,7 @@ struct arguments
 	char *outFile;
 	int channel;
 	int minIntegral;
+	int baselineSamples;
 	double yrange;
 	enum PeakFindingMethod method;
 	double threshold;
@@ -73,6 +75,8 @@ parse_opt (int key, char *arg, struct argp_state *state)
 			arguments->minIntegral = (int)strtol(arg, NULL, 10);
 		case 't':
 			arguments->threshold = atof(arg);
+		case 's':
+			arguments->baselineSamples = (int)strtol(arg, NULL, 10);
 
 		case ARGP_KEY_ARG:
 			if (state->arg_num >= 3) {
@@ -125,6 +129,7 @@ int main(int argc, char *argv[])
 	arguments.outFile = 0;
 	arguments.minIntegral = 0;
 	arguments.threshold = 0.1;
+	arguments.baselineSamples = 5;
 	
 	argp_parse(&argp, argc, argv, ARGP_NO_EXIT, 0, &arguments);
 
@@ -138,6 +143,7 @@ int main(int argc, char *argv[])
 		scan.SetPeakFindingMethod(arguments.method);
 		scan.SetPeakThreshold(arguments.threshold);
 		scan.SetPeakIterations(3);
+		scan.SetBaselineSamples(arguments.baselineSamples);
 		scan.SetCanvas(canvas);
 		data->Process(&scan);
 	}
@@ -157,6 +163,7 @@ int main(int argc, char *argv[])
 		integrator.SetMinIntegral(arguments.minIntegral);
 		integrator.SetPeakThreshold(arguments.threshold);
 		integrator.SetPeakIterations(3);
+		integrator.SetBaselineSamples(arguments.baselineSamples);
 		data->Process(&integrator);
 		if (arguments.outFile != 0){
 			cout.rdbuf(coutbuf);

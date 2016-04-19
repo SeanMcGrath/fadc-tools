@@ -90,6 +90,12 @@ public :
 	   else
 		   peakOptions.iterations = 1;
    }
+   virtual void    SetBaselineSamples(int samples){
+	   if (samples > 1)
+		   peakOptions.baselineSamples = samples;
+	   else
+		   peakOptions.baselineSamples = 1;
+   }
 
    // Analysis functions
    virtual unsigned int FindPeakMax(std::vector<unsigned int> * data);
