@@ -108,7 +108,11 @@ unsigned int * FindPeakByIncreases(std::vector<unsigned int> * data, double thre
 // Detects start/end of peak by continuous fraction method.
 // finds wave baseline by averaging over first 20 samples,
 // then finds when wave goes above/below (baseline + peak_max*threshold)
-unsigned int * FindPeakByConstantFraction(std::vector<unsigned int> * data, double threshold, int samples)
+unsigned int * FindPeakByConstantFraction(
+		std::vector<unsigned int> * data,
+		double threshold,
+		double threshold2,
+		int samples)
 {
 	unsigned int peaks[2] = {0, 0};
 	unsigned int current;
@@ -119,7 +123,7 @@ unsigned int * FindPeakByConstantFraction(std::vector<unsigned int> * data, doub
 	if ((max - avg) < (avg*threshold))
 		return peaks;
 
-	double thresholdVal = avg + max*threshold;
+	double thresholdVal = avg + (max - avg)*threshold2;
 	unsigned int i;
 
 	// find peak start
@@ -169,7 +173,11 @@ unsigned int * FindPeak(
                 peaks = FindPeakByMean(data);
                 break;
 	    case byConstFraction:
-		peaks = FindPeakByConstantFraction(data, options.threshold, options.baselineSamples);
+		peaks = FindPeakByConstantFraction(
+				data,
+				options.threshold,
+				options.threshold2,
+				options.baselineSamples);
 		break;
             case none:
 		unsigned int temp[2] = {0, 0};

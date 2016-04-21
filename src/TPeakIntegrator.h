@@ -89,6 +89,12 @@ public :
 	   else
 		   peakOptions.threshold = 0;
    }
+   virtual void    SetPeakThreshold2(double threshold){
+	   if (threshold > 0)
+		   peakOptions.threshold2 = threshold;
+	   else
+		   peakOptions.threshold2 = 0;
+   }
    virtual void    SetPeakIterations(int iterations){
 	   if (iterations > 0)
 		   peakOptions.iterations = iterations;

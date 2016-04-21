@@ -13,6 +13,7 @@ enum PeakFindingMethod
 struct PeakFindingOptions
 {
 	double threshold;
+	double threshold2;
 	int iterations;
 	int baselineSamples;
 };

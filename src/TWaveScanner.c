@@ -113,18 +113,6 @@ Bool_t TWaveScanner::Process(Long64_t entry)
    return kTRUE;
 }
 
-unsigned int TWaveScanner::FindPeakMax(std::vector<unsigned int> * data)
-{
-	unsigned int max = 0;
-	for(unsigned int i=1; i <= data->size(); i++) {
-		if(data->at(i) > max){
-			max = data->at(i);
-		}
-	}
-	return max;
-}
-
-
 void TWaveScanner::SlaveTerminate()
 {
    // The SlaveTerminate() function is called after all entries or objects

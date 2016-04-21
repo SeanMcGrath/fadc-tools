@@ -29,7 +29,8 @@ static struct argp_option options[] = {
 	{"yrange",	'y', "Y_RANGE",	0, "set Y_RANGE as the maximum Y value of displayed plots."},
 	{"outfile",	'o', "OUT_FILE", 0, "Print analysis results to OUT_FILE."},
 	{"min-integral",'m', "MIN_INTEGRAL", 0, "Reject waves with integral less than MIN_INTEGRAL"},
-	{"threshold",	't', "THRESHOLD", 0, "Use THRESHOLD as the fractional threshold value for the fractional and constfrac peak finding methods"},
+	{"rejection-threshold",	'r', "THRESHOLD", 0, "Use THRESHOLD as the peak rejection threshold for the constfrac peak finding method"},
+	{"peak-threshold",	't', "THRESHOLD", 0, "Use THRESHOLD as the fractional height threshold for the constfrac peak finding method"},
 	{"samples",	's', "SAMPLES", 0, "For the constant fraction method, calculate the sample baseline over the first SAMPLES samples in each waveform"},
 	{ 0 }
 };
@@ -45,6 +46,7 @@ struct arguments
 	double yrange;
 	enum PeakFindingMethod method;
 	double threshold;
+	double threshold2;
 };
 
 static error_t
@@ -73,10 +75,16 @@ parse_opt (int key, char *arg, struct argp_state *state)
 			break;
 		case 'm':
 			arguments->minIntegral = (int)strtol(arg, NULL, 10);
-		case 't':
+			break;
+		case 'r':
 			arguments->threshold = atof(arg);
+			break;
+		case 't':
+			arguments->threshold2 = atof(arg);
+			break;
 		case 's':
 			arguments->baselineSamples = (int)strtol(arg, NULL, 10);
+			break;
 
 		case ARGP_KEY_ARG:
 			if (state->arg_num >= 3) {
@@ -123,12 +131,13 @@ int main(int argc, char *argv[])
 	//defaults
 	arguments.yrange = 2000.0;
 	arguments.command = "";
-	arguments.method = none;
+	arguments.method = byConstFraction;
 	arguments.channel = 13;
 	arguments.rootFile = "";
 	arguments.outFile = 0;
 	arguments.minIntegral = 0;
-	arguments.threshold = 0.1;
+	arguments.threshold = 0.5;
+	arguments.threshold2 = 0.05;
 	arguments.baselineSamples = 5;
 	
 	argp_parse(&argp, argc, argv, ARGP_NO_EXIT, 0, &arguments);
@@ -142,6 +151,7 @@ int main(int argc, char *argv[])
 		scan.SetYAxisRange(arguments.yrange);
 		scan.SetPeakFindingMethod(arguments.method);
 		scan.SetPeakThreshold(arguments.threshold);
+		scan.SetPeakThreshold2(arguments.threshold2);
 		scan.SetPeakIterations(3);
 		scan.SetBaselineSamples(arguments.baselineSamples);
 		scan.SetCanvas(canvas);
@@ -162,6 +172,7 @@ int main(int argc, char *argv[])
 		integrator.SetPeakFindingMethod(arguments.method);
 		integrator.SetMinIntegral(arguments.minIntegral);
 		integrator.SetPeakThreshold(arguments.threshold);
+		integrator.SetPeakThreshold2(arguments.threshold2);
 		integrator.SetPeakIterations(3);
 		integrator.SetBaselineSamples(arguments.baselineSamples);
 		data->Process(&integrator);
